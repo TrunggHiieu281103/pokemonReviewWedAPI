@@ -16,6 +16,7 @@ namespace PokemonReviewApp.Repository
             return _context.Categories.Any(c => c.Id == categoryId);
         }
 
+
         public bool CreateCategory(Category category)
         {
             //Change Tracker
@@ -24,6 +25,12 @@ namespace PokemonReviewApp.Repository
             //EntityStatse.Added
             _context.Add(category);
 
+            return Save();
+        }
+
+        public bool DeleteCategory(Category category)
+        {
+            _context.Remove(category);
             return Save();
         }
 
@@ -40,6 +47,11 @@ namespace PokemonReviewApp.Repository
         public ICollection<Pokemon> GetPokemonByCategory(int categoryId)
         {
             return _context.PokemonCategories.Where(e => e.CategoryId == categoryId).Select(c => c.Pokemon).ToList();
+        }
+
+        public bool IsCategoriesRelated(int categoryId)
+        {
+            return _context.PokemonCategories.Where(p =>  p.CategoryId == categoryId).Any();
         }
 
         public bool Save()

@@ -15,15 +15,18 @@ namespace PokemonReviewApp.Controllers
         private readonly IMapper _mapper;
         private readonly IOwnerRepository _ownerRepository;
         private readonly ICategoryRepository _categoryRepository;
+        private readonly IReviewRepository _reviewRepository;
 
         public PokemonController(IPokemonRepository pokemonRepository, IMapper mapper,
             IOwnerRepository ownerRepository,
+            IReviewRepository reviewRepository,
             ICategoryRepository categoryRepository)
         {
             _pokemonRepository = pokemonRepository;
             _mapper = mapper;
             _ownerRepository = ownerRepository;
             _categoryRepository = categoryRepository;
+            _reviewRepository = reviewRepository;
         }
 
         [HttpGet]
@@ -131,6 +134,35 @@ namespace PokemonReviewApp.Controllers
             {
                 ModelState.AddModelError("", "Something wnet wrong updating category");
                 return StatusCode(500, ModelState);
+            }
+
+            return NoContent();
+        }
+
+
+        [HttpDelete("{pokeId}")]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(204)]
+        [ProducesResponseType(404)]
+        public IActionResult DeletePokemon(int pokeId)
+        {
+            if (!_pokemonRepository.PokemonExists(pokeId))
+                return NotFound();
+
+            var reviewsToDelete = _reviewRepository.GetReviewsOfAPokemon(pokeId);
+            var pokeToDelete = _pokemonRepository.GetPokemon(pokeId);
+
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            if (!_reviewRepository.DeleteReviews(reviewsToDelete.ToList()))
+            {
+                ModelState.AddModelError("", "Something wnet wrong deleting reviews");
+            }
+
+            if (!_pokemonRepository.DeletePokemon(pokeToDelete))
+            {
+                ModelState.AddModelError("", "Something went wrong deleting category");
             }
 
             return NoContent();

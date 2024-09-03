@@ -18,6 +18,8 @@ namespace PokemonReviewApp.Data
         public DbSet<PokemonCategory> PokemonCategories { get; set; }
         public DbSet<Review> Reviews { get; set; }
         public DbSet<Reviewer> Reviewers { get; set; }
+        public DbSet<User> Users{ get; set; }
+        public DbSet<Role> Roles{ get; set; }
 
         //tạo relationship cho các foreign key
         protected override void OnModelCreating(ModelBuilder modelBuilder)

@@ -52,14 +52,14 @@ namespace PokemonReviewApp.Controllers
         }
 
         [HttpGet("pokemon/{categoryId}")]
-        [ProducesResponseType(200 , Type = typeof(IEnumerable<Pokemon>))]
+        [ProducesResponseType(200, Type = typeof(IEnumerable<Pokemon>))]
         [ProducesResponseType(400)]
         public IActionResult GetPokemonByCategoryId(int categoryId)
         {
             var pokemons = _mapper.Map<List<PokemonDto>>(
                 _categoryRepository.GetPokemonByCategory(categoryId));
 
-            if(!ModelState.IsValid)
+            if (!ModelState.IsValid)
                 return BadRequest();
 
             return Ok(pokemons);
@@ -70,14 +70,14 @@ namespace PokemonReviewApp.Controllers
         [ProducesResponseType(400)]
         public IActionResult CreateCategory([FromBody] CategoryDto categoryCreate)
         {
-            if(categoryCreate == null)
+            if (categoryCreate == null)
                 return BadRequest();
 
             var category = _categoryRepository.GetCategories()
                 .Where(c => c.Name.Trim().ToUpper() == categoryCreate.Name.TrimEnd().ToUpper())
                 .FirstOrDefault();
 
-            if(category != null)
+            if (category != null)
             {
                 ModelState.AddModelError("", "Category already exists");
                 return StatusCode(422, ModelState);
@@ -101,15 +101,15 @@ namespace PokemonReviewApp.Controllers
         [ProducesResponseType(400)]
         [ProducesResponseType(204)]
         [ProducesResponseType(404)]
-        public IActionResult UpdateCategory (int categoryId, [FromBody] CategoryDto updateCategory)
+        public IActionResult UpdateCategory(int categoryId, [FromBody] CategoryDto updateCategory)
         {
             if (updateCategory == null)
                 return BadRequest(ModelState);
 
-            if(categoryId != updateCategory.Id)
+            if (categoryId != updateCategory.Id)
                 return BadRequest(ModelState);
 
-            if(!_categoryRepository.CategoriesExists(categoryId))
+            if (!_categoryRepository.CategoriesExists(categoryId))
                 return NotFound();
 
             if (!ModelState.IsValid)
@@ -120,7 +120,35 @@ namespace PokemonReviewApp.Controllers
             if (!_categoryRepository.UpdateCategory(categoryMap))
             {
                 ModelState.AddModelError("", "Something wnet wrong updating category");
-                return StatusCode(500,  ModelState);
+                return StatusCode(500, ModelState);
+            }
+
+            return NoContent();
+        }
+
+        [HttpDelete("{categoryId}")]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(204)]
+        [ProducesResponseType(404)]
+        public IActionResult DeleteCategory(int categoryId)
+        {
+            if (!_categoryRepository.CategoriesExists(categoryId))
+                return NotFound();
+
+            if (_categoryRepository.IsCategoriesRelated(categoryId))
+            {
+                ModelState.AddModelError("", "Cannot delete this category because it is related to other tables");
+                return BadRequest(ModelState);
+            }
+
+            var categoryToDelete = _categoryRepository.GetCategory(categoryId);
+
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            if (!_categoryRepository.DeleteCategory(categoryToDelete))
+            {
+                ModelState.AddModelError("", "Something went wrong deleting category");
             }
 
             return NoContent();
