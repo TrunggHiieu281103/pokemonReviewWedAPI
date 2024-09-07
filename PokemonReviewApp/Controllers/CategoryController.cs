@@ -19,6 +19,10 @@ namespace PokemonReviewApp.Controllers
             _mapper = mapper;
         }
 
+        /// <summary>
+        /// Get all category in the data
+        /// </summary>
+        /// <returns></returns>
         [HttpGet]
         [ProducesResponseType(200, Type = typeof(IEnumerable<Category>))]
         public IActionResult GetCategories()
